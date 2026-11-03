@@ -3,7 +3,8 @@
 ## Environment setup
 
 - Backend: copy `../backend/.env.example` to `../backend/.env` and set `DATABASE_URL` to the PostgreSQL connection string from your Supabase project's **Connect** dialog. URL-encode special characters in the password and keep this file private.
-- Frontend: copy `.env.example` to `.env` and set `VITE_API_BASE_URL` to the running backend URL. The default is `http://localhost:8000`.
+- Frontend: `VITE_API_BASE_URL` optionally overrides the hosted API URL configured in `src/api.js`. Set it in the frontend host's environment settings if using a different backend; Vite reads this variable at build time.
+- CORS: when changing the deployed frontend domain, add its origin (scheme and hostname, without a path) to `allow_origins` in `../backend/app/main.py`.
 
 Install backend dependencies from the `backend` directory with `pip install -r requirements.txt`, then start the API with `uvicorn app.main:app --reload`. Start the frontend from the `frontend` directory with `npm install` and `npm run dev`.
 
