@@ -1,38 +1,55 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://daily-meal-attendance.onrender.com";
+const API_BASE_URL = (
+import.meta.env.VITE_API_BASE_URL ||
+"https://daily-meal-attendance.onrender.com"
+).replace(/\/+$/, "");
 
-async function apiRequest(path, options) {
-  let response;
+console.log("API BASE URL:", API_BASE_URL);
 
-  try {
-    response = await fetch(`${API_BASE_URL}${path}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-    });
-  } catch {
-    throw new Error(
-      `Could not connect to the API at ${API_BASE_URL}. Make sure the backend is running.`,
-    );
-  }
+async function apiRequest(path, options = {}) {
+const url = `${API_BASE_URL}${path}`;
 
-  const data = await response.json().catch(() => null);
-  if (!response.ok) {
-    const detail = data?.detail;
-    const message = Array.isArray(detail)
-      ? detail.map((item) => item.msg).join(", ")
-      : detail;
-    const error = new Error(
-      message || `API request failed (${response.status})`,
-    );
-    error.status = response.status;
-    throw error;
-  }
+let response;
 
-  return data;
+try {
+response = await fetch(url, {
+...options,
+headers: {
+"Content-Type": "application/json",
+...options.headers,
+},
+});
+} catch (error) {
+console.error("API CONNECTION ERROR:", error);
+
+
+throw new Error(
+  `Cannot connect to ${url}. Check your browser Console for details.`,
+  { cause: error },
+);
+
+
+}
+
+const data = await response.json().catch(() => null);
+
+if (!response.ok) {
+const detail = data?.detail;
+
+const message = Array.isArray(detail)
+  ? detail.map((item) => item.msg).join(", ")
+  : detail;
+
+const error = new Error(
+  message || `API request failed (${response.status})`
+);
+
+error.status = response.status;
+throw error;
+
+
+}
+
+return data;
 }
 
 export { apiRequest };
