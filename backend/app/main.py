@@ -37,19 +37,22 @@ app = FastAPI(
     version="1.0.0",
 )
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+
+        # Vercel frontend
+        "https://daily-meal-attendance-9c8oqp1vk-ran-7d27.vercel.app",
+
+        # Previous Vercel deployment
         "https://frontend-o80pmwmq6-ran-7d27.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.get("/")
 def home():
