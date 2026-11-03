@@ -43,6 +43,9 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
 
+        # Production frontend
+        "https://daily-meal-attendance.vercel.app",
+
         # Vercel frontend
         "https://daily-meal-attendance-9c8oqp1vk-ran-7d27.vercel.app",
 
