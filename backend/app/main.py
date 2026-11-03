@@ -8,8 +8,13 @@ from app.models import Member
 from app.routers import auth, members, attendance
 
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables once the database is reachable.
+try:
+    Base.metadata.create_all(bind=engine)
+except Exception as exc:  # pragma: no cover - surfaced to startup logs
+    raise RuntimeError(
+        "Database connection failed. Check backend/.env DATABASE_URL and make sure it points to a valid PostgreSQL Supabase connection string."
+    ) from exc
 
 # Preserve the starter members when initializing an empty database.
 with SessionLocal() as db:
@@ -49,7 +54,7 @@ app.add_middleware(
 def home():
     return {
         "message": "Welcome to MealTrack API",
-        "database": "MySQL",
+        "database": "PostgreSQL",
         "status": "running",
     }
 
