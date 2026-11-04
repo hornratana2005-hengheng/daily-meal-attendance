@@ -1,5 +1,5 @@
 import { Menu, CalendarDays, UserCircle } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/useAuth";
 
 function Header({ onMenuClick }) {
@@ -10,6 +10,7 @@ function Header({ onMenuClick }) {
     "/": "Dashboard",
     "/members": "Members",
     "/history": "Attendance History",
+    "/profile": "My Profile",
   };
 
   const title = pageTitles[location.pathname] || "MealTrack";
@@ -55,9 +56,13 @@ function Header({ onMenuClick }) {
 
           <div className="flex items-center gap-2">
             <UserCircle size={32} className="text-green-600" />
-            <span className="hidden sm:block text-sm font-medium">
-              {user.name}
-            </span>
+            <Link
+              to="/profile"
+              className="text-sm font-medium text-gray-700 hover:text-green-700"
+            >
+              <span className="sm:hidden">Profile</span>
+              <span className="hidden sm:inline">{user.name}</span>
+            </Link>
             <button
               type="button"
               onClick={() => {

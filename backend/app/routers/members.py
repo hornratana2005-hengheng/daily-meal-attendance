@@ -73,9 +73,15 @@ def create_member(
 def update_member(
     member_id: int,
     data: MemberUpdate,
-    _current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    if member_id != current_user.member_id:
+        raise HTTPException(
+            status_code=403,
+            detail="You can only update your own member profile",
+        )
+
     name = data.name.strip()
 
     if not name:

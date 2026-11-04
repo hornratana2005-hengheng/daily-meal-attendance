@@ -4,6 +4,7 @@ import secrets
 
 
 _PASSWORD_ITERATIONS = 600_000
+PASSWORD_MIN_LENGTH = 8
 _DUMMY_SALT = "mealtrack-login-timing"
 _DUMMY_PASSWORD_HASH = hashlib.pbkdf2_hmac(
     "sha256",
@@ -52,4 +53,8 @@ def create_access_token() -> str:
 
 
 def hash_access_token(token: str) -> str:
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def hash_reset_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()

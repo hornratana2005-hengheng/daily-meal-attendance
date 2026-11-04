@@ -43,7 +43,13 @@ function AttendanceProvider({ children }) {
         ]);
 
         if (active) {
-          setMembers(loadedMembers);
+          setMembers(
+            loadedMembers.map((member) =>
+              member.id === user.member_id
+                ? { ...member, name: user.name }
+                : member,
+            ),
+          );
           setAttendance(loadedAttendance);
         }
       } catch (requestError) {
@@ -61,7 +67,7 @@ function AttendanceProvider({ children }) {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [token, user.member_id, user.name]);
 
   const getAttendanceKey = (date, mealType) => `${date}_${mealType}`;
 
@@ -71,6 +77,7 @@ function AttendanceProvider({ children }) {
   const updateAttendance = async (
     memberId,
     status,
+    reason = null,
     date = today,
     mealType = selectedMeal,
   ) => {
@@ -86,6 +93,7 @@ function AttendanceProvider({ children }) {
           meal_date: date,
           meal_type: mealType,
           status,
+          reason: status === "Not Eating" ? reason?.trim() || null : null,
         }),
       });
 
@@ -93,21 +101,31 @@ function AttendanceProvider({ children }) {
         ...previous,
         [key]: {
           ...(previous[key] || {}),
-          [memberId]: status,
+          [memberId]: {
+            status,
+            reason: status === "Not Eating" ? reason?.trim() || null : null,
+          },
         },
       }));
+      return true;
     } catch (requestError) {
       setError(requestError.message);
+      return false;
     }
   };
 
   const getMembersWithStatus = (date = today, mealType = selectedMeal) => {
     const records = getMealAttendance(date, mealType);
 
-    return members.map((member) => ({
-      ...member,
-      status: records[member.id] || "Pending",
-    }));
+    return members.map((member) => {
+      const record = records[member.id];
+      return {
+        ...member,
+        status:
+          typeof record === "string" ? record : record?.status || "Pending",
+        reason: typeof record === "string" ? null : record?.reason || null,
+      };
+    });
   };
 
   const getStatistics = (date = today, mealType = selectedMeal) => {

@@ -39,13 +39,20 @@ function History() {
             return [];
           }
 
-          return members.map((member) => ({
-            id: `${key}-${member.id}`,
-            date,
-            meal,
-            member,
-            status: records[member.id] || "Pending",
-          }));
+          return members.map((member) => {
+            const record = records[member.id];
+            return {
+              id: `${key}-${member.id}`,
+              date,
+              meal,
+              member,
+              status:
+                typeof record === "string"
+                  ? record
+                  : record?.status || "Pending",
+              reason: typeof record === "string" ? null : record?.reason || null,
+            };
+          });
         })
         .sort(
           (a, b) =>
@@ -162,6 +169,9 @@ function History() {
                 <th scope="col" className="px-5 py-3.5 sm:px-6">
                   Status
                 </th>
+                <th scope="col" className="px-5 py-3.5 sm:px-6">
+                  Reason
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -199,12 +209,15 @@ function History() {
                         {row.status}
                       </span>
                     </td>
+                    <td className="px-5 py-4 text-sm text-gray-600 sm:px-6">
+                      {row.reason || "—"}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-5 py-14 text-center sm:px-6"
                   >
                     <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-gray-50 text-gray-400">
@@ -265,6 +278,11 @@ function History() {
                     </p>
                   </div>
                 </div>
+                {row.reason && (
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Reason:</span> {row.reason}
+                  </p>
+                )}
               </article>
             ))
           ) : (

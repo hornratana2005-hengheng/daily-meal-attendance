@@ -66,6 +66,25 @@ function AuthProvider({ children }) {
 
   const signUp = (details) => authenticate("/api/auth/signup", details);
   const logIn = (credentials) => authenticate("/api/auth/login", credentials);
+  const requestPasswordReset = (email) =>
+    apiRequest("/api/auth/password-reset/request", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  const resetPassword = (token, password) =>
+    apiRequest("/api/auth/password-reset/confirm", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    });
+  const updateProfile = async (profile) => {
+    const updatedUser = await apiRequest("/api/auth/me", {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify(profile),
+    });
+    setUser(updatedUser);
+    return updatedUser;
+  };
 
   const logOut = async () => {
     const currentToken = token;
@@ -83,7 +102,18 @@ function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, sessionError, signUp, logIn, logOut }}
+      value={{
+        user,
+        token,
+        loading,
+        sessionError,
+        signUp,
+        logIn,
+        logOut,
+        requestPasswordReset,
+        resetPassword,
+        updateProfile,
+      }}
     >
       {children}
     </AuthContext.Provider>

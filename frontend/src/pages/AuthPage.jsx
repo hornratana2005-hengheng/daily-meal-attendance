@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/useAuth";
 
 function AuthPage() {
   const { user, loading, sessionError, logIn, signUp } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
   const [isSigningUp, setIsSigningUp] = useState(false);
   const [name, setName] = useState("");
@@ -55,6 +56,15 @@ function AuthPage() {
             : "Log in to manage your meal attendance."}
         </p>
 
+        {location.state?.message && (
+          <p
+            className="mt-5 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-800"
+            role="status"
+          >
+            {location.state.message}
+          </p>
+        )}
+
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           {isSigningUp && (
             <div>
@@ -93,6 +103,17 @@ function AuthPage() {
               className="w-full rounded-xl border border-gray-200 px-3 py-2.5 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20"
             />
           </div>
+
+          {!isSigningUp && (
+            <div className="text-right">
+              <Link
+                to="/forgot-password"
+                className="text-sm font-semibold text-green-700 hover:text-green-800"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          )}
 
           <div>
             <label

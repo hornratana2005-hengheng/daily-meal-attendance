@@ -35,7 +35,7 @@ def build_attendance(
     ).all()
 
     records = {
-        row.member_id: row.status
+        row.member_id: {"status": row.status, "reason": row.reason}
         for row in attendance_rows
     }
 
@@ -43,7 +43,8 @@ def build_attendance(
         {
             "id": member.id,
             "name": member.name,
-            "status": records.get(member.id, "Pending"),
+            "status": records.get(member.id, {}).get("status", "Pending"),
+            "reason": records.get(member.id, {}).get("reason"),
         }
         for member in members
     ]
@@ -119,7 +120,10 @@ def get_attendance_records(
     records = {}
     for row in attendance_rows:
         key = f"{row.meal_date.isoformat()}_{row.meal_type}"
-        records.setdefault(key, {})[row.member_id] = row.status
+        records.setdefault(key, {})[row.member_id] = {
+            "status": row.status,
+            "reason": row.reason,
+        }
 
     return records
 
@@ -152,8 +156,15 @@ def save_attendance(
         )
     )
 
+    reason = (
+        data.reason.strip() or None
+        if data.status.value == "Not Eating" and data.reason
+        else None
+    )
+
     if existing:
         existing.status = data.status.value
+        existing.reason = reason
         attendance = existing
 
     else:
@@ -162,6 +173,7 @@ def save_attendance(
             meal_date=data.meal_date,
             meal_type=data.meal_type.value,
             status=data.status.value,
+            reason=reason,
         )
 
         db.add(attendance)
@@ -177,5 +189,6 @@ def save_attendance(
             "meal_date": attendance.meal_date.isoformat(),
             "meal_type": attendance.meal_type,
             "status": attendance.status,
+            "reason": attendance.reason,
         },
     }

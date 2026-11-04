@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from app.models.member import Member
 from sqlalchemy import (
@@ -6,6 +7,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    Text,
     UniqueConstraint,
 )
 
@@ -50,6 +52,11 @@ class Attendance(Base):
     status: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
+    )
+
+    reason: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
     )
 
     member: Mapped["Member"] = relationship(

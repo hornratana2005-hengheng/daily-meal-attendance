@@ -1,7 +1,8 @@
 from datetime import date
 from enum import Enum
+from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MealType(str, Enum):
@@ -20,3 +21,4 @@ class AttendanceCreate(BaseModel):
     meal_date: date
     meal_type: MealType
     status: AttendanceStatus
+    reason: Optional[str] = Field(default=None, max_length=500)

@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Users, CheckCircle2, XCircle, Clock3, Utensils } from "lucide-react";
 
 import { useAttendance } from "../context/useAttendance";
 
 function Dashboard() {
+  const [selectedStatuses, setSelectedStatuses] = useState({});
+  const [reasonDrafts, setReasonDrafts] = useState({});
   const {
     today,
     selectedMeal,
@@ -18,6 +21,14 @@ function Dashboard() {
   const members = getMembersWithStatus();
 
   const currentMember = members.find((member) => member.id === currentUserId);
+  const responseKey = `${currentUserId}_${selectedMeal}`;
+  const selectedStatus =
+    selectedStatuses[responseKey] || currentMember?.status || "Pending";
+  const reason = reasonDrafts[responseKey] ?? currentMember?.reason ?? "";
+
+  const saveNotEating = async () => {
+    await updateAttendance(currentUserId, "Not Eating", reason);
+  };
 
   const statCards = [
     {
@@ -132,7 +143,18 @@ function Dashboard() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <button
-            onClick={() => updateAttendance(currentUserId, "Eating")}
+            aria-pressed={selectedStatus === "Eating"}
+            onClick={() => {
+              setSelectedStatuses((previous) => ({
+                ...previous,
+                [responseKey]: "Eating",
+              }));
+              setReasonDrafts((previous) => ({
+                ...previous,
+                [responseKey]: "",
+              }));
+              updateAttendance(currentUserId, "Eating");
+            }}
             className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 py-3 text-white transition hover:bg-green-700 sm:w-auto sm:px-6"
           >
             <CheckCircle2 size={20} />
@@ -140,13 +162,55 @@ function Dashboard() {
           </button>
 
           <button
-            onClick={() => updateAttendance(currentUserId, "Not Eating")}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-white transition hover:bg-red-600 sm:w-auto sm:px-6"
+            aria-pressed={selectedStatus === "Not Eating"}
+            onClick={() =>
+              setSelectedStatuses((previous) => ({
+                ...previous,
+                [responseKey]: "Not Eating",
+              }))
+            }
+            className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-white transition sm:w-auto sm:px-6 ${
+              selectedStatus === "Not Eating"
+                ? "bg-red-700"
+                : "bg-red-500 hover:bg-red-600"
+            }`}
           >
             <XCircle size={20} />
             No, I Won't
           </button>
         </div>
+
+        {selectedStatus === "Not Eating" && (
+          <div className="mt-5 space-y-3">
+            <label
+              htmlFor="not-eating-reason"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Reason (optional)
+            </label>
+            <textarea
+              id="not-eating-reason"
+              value={reason}
+              onChange={(event) =>
+                setReasonDrafts((previous) => ({
+                  ...previous,
+                  [responseKey]: event.target.value,
+                }))
+              }
+              maxLength={500}
+              rows={3}
+              placeholder="Let us know why you won't be eating"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-500/20"
+            />
+            <button
+              type="button"
+              onClick={saveNotEating}
+              className="rounded-xl bg-red-500 px-5 py-3 font-medium text-white transition hover:bg-red-600"
+            >
+              Save response
+            </button>
+          </div>
+        )}
 
         <div className="mt-6 bg-gray-50 rounded-xl p-4">
           <p className="text-sm text-gray-500">Your Current Status</p>
@@ -154,6 +218,11 @@ function Dashboard() {
           <p className="font-semibold text-gray-800 mt-1">
             {currentMember?.status || "Pending"}
           </p>
+          {currentMember?.status === "Not Eating" && currentMember.reason && (
+            <p className="mt-2 text-sm text-gray-600">
+              Reason: {currentMember.reason}
+            </p>
+          )}
         </div>
       </div>
 
@@ -183,17 +252,24 @@ function Dashboard() {
                 <span className="font-medium text-gray-700">{member.name}</span>
               </div>
 
-              <span
-                className={`text-xs font-semibold px-3 py-1 rounded-full ${
-                  member.status === "Eating"
-                    ? "bg-green-100 text-green-700"
-                    : member.status === "Not Eating"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-yellow-100 text-yellow-700"
-                }`}
-              >
-                {member.status}
-              </span>
+              <div className="text-right">
+                <span
+                  className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                    member.status === "Eating"
+                      ? "bg-green-100 text-green-700"
+                      : member.status === "Not Eating"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {member.status}
+                </span>
+                {member.reason && (
+                  <p className="mt-1 max-w-48 text-xs text-gray-500">
+                    {member.reason}
+                  </p>
+                )}
+              </div>
             </div>
           ))}
         </div>

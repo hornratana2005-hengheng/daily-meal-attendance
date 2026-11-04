@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.database import Base, SessionLocal, engine
 from app import models
@@ -16,20 +16,10 @@ except Exception as exc:  # pragma: no cover - surfaced to startup logs
         "Database connection failed. Check backend/.env DATABASE_URL and make sure it points to a valid PostgreSQL Supabase connection string."
     ) from exc
 
-# Preserve the starter members when initializing an empty database.
-with SessionLocal() as db:
-    if not db.scalar(select(Member.id).limit(1)):
-        db.add_all(
-            [
-                Member(id=1, name="Ratana"),
-                Member(id=2, name="Vuthy"),
-                Member(id=3, name="Sreynich"),
-                Member(id=4, name="Chhunleang"),
-                Member(id=5, name="Member 5"),
-            ]
-        )
-        db.commit()
-
+with engine.begin() as connection:
+    connection.execute(
+        text("ALTER TABLE attendances ADD COLUMN IF NOT EXISTS reason TEXT")
+    )
 
 app = FastAPI(
     title="MealTrack API",
